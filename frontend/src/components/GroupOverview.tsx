@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import ExpenseForm from "@/components/ExpenseForm";
+import DeleteExpenseButton from "@/components/DeleteExpenseButton";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
@@ -244,6 +245,16 @@ export default function GroupOverview({ group, user }: Props) {
                           )}
                         </div>
                       </details>
+                      {user === expense.paid_by && (
+                        <DeleteExpenseButton
+                          groupId={group.id}
+                          expenseId={expense.id}
+                          user={user}
+                          onDeleted={() => {
+                            setRefreshKey((previous) => previous + 1);
+                          }}
+                        />
+                      )}
                     </div>
                   ))}
                 </div>
