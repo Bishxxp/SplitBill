@@ -1,6 +1,7 @@
 from decimal import Decimal
 
 import pytest
+
 from app.services.splitting import split_equal, split_exact
 
 
