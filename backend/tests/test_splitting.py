@@ -70,6 +70,8 @@ def test_zero_amount():
             "0.00",
             ["alice", "bob"],
         )
+
+
 def test_equal_split_one_satang():
     shares = split_equal(
         "0.01",
@@ -83,14 +85,16 @@ def test_equal_split_one_satang():
     }
 
     assert sum(shares.values()) == Decimal("0.01")
-    
+
+
 def test_negative_amount():
     with pytest.raises(ValueError):
         split_equal(
             "-100.00",
             ["alice", "bob"],
         )
-        
+
+
 def test_exact_share_three_decimal_places():
     with pytest.raises(ValueError):
         split_exact(

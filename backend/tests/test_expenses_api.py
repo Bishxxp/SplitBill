@@ -266,6 +266,7 @@ def test_soft_delete_preserves_record(client, db_session):
     for member in response.json()["balances"]:
         assert Decimal(member["balance"]) == Decimal("0.00")
 
+
 def test_payer_not_in_group(client):
     payload = expense_payload()
 
@@ -279,9 +280,9 @@ def test_payer_not_in_group(client):
 
     assert response.status_code == 422
 
-    assert response.json()["detail"] == (
-        "Payer must be a member of this group"
-    )
+    assert response.json()["detail"] == ("Payer must be a member of this group")
+
+
 def test_split_member_not_in_group(client):
     payload = expense_payload()
 
@@ -299,10 +300,9 @@ def test_split_member_not_in_group(client):
 
     assert response.status_code == 422
 
-    assert response.json()["detail"] == (
-        "dan is not a member of this group"
-    )
-    
+    assert response.json()["detail"] == ("dan is not a member of this group")
+
+
 def test_same_key_different_groups(client):
     key = "shared-key-001"
 
@@ -340,7 +340,8 @@ def test_same_key_different_groups(client):
         "bob": "100.00",
         "dan": "100.00",
     }
-    
+
+
 def test_idempotency_after_soft_delete(client):
     url = "/groups/1/expenses"
     headers = expense_headers(key="deleted-key-001")
@@ -381,9 +382,9 @@ def test_idempotency_after_soft_delete(client):
     )
 
     assert expenses.json() == []
-    
+
+
 def test_missing_user_header(client):
     response = client.get("/groups")
 
     assert response.status_code == 422
-    
