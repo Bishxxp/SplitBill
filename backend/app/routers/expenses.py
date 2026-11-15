@@ -6,7 +6,11 @@ from sqlalchemy.orm import Session
 from app.dependencies import get_current_user, get_db
 from app.models import User
 from app.schemas.expenses import ExpenseCreate, ExpenseResponse
-from app.services.expenses import create_expense, list_expenses
+from app.services.expenses import (
+    create_expense,
+    delete_expense,
+    list_expenses,
+)
 
 router = APIRouter(
     prefix="/groups/{group_id}/expenses",
@@ -55,5 +59,22 @@ def get_expenses(
     return list_expenses(
         db=db,
         group_id=group_id,
+        current_user=user,
+    )
+    
+@router.delete(
+    "/{expense_id}",
+    status_code=204,
+)
+def remove_expense(
+    group_id: int,
+    expense_id: int,
+    db: Annotated[Session, Depends(get_db)],
+    user: Annotated[User, Depends(get_current_user)],
+):
+    delete_expense(
+        db=db,
+        group_id=group_id,
+        expense_id=expense_id,
         current_user=user,
     )

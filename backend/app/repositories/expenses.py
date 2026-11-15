@@ -128,3 +128,17 @@ def list_group_expenses(
     )
 
     return list(db.scalars(statement).all())
+
+def get_expense_by_id(
+    db: Session,
+    group_id: int,
+    expense_id: int,
+) -> Expense | None:
+
+    return db.scalar(
+        select(Expense).where(
+            Expense.id == expense_id,
+            Expense.group_id == group_id,
+            Expense.is_deleted.is_(False),
+        )
+    )

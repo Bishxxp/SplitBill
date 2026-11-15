@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 
 from app.models import Expense, User
 from app.repositories.expenses import (
+    get_expense_by_id,
     get_expense_by_key,
     get_expense_shares,
     list_group_expenses,
@@ -206,3 +207,55 @@ def list_expenses(
         build_expense_response(db, expense)
         for expense in expenses
     ]
+    
+def delete_expense(
+    db: Session,
+    group_id: int,
+    expense_id: int,
+    current_user: User,
+) -> None:
+
+    # 1. Check group existence
+    group = get_group_by_id(db, group_id)
+
+    if group is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Group not found",
+        )
+
+    # 2. Check requester membership
+    if not is_group_member(db, group_id, current_user.id):
+        raise HTTPException(
+            status_code=403,
+            detail="Not a member of this group",
+        )
+
+    # 3. Find expense
+    expense = get_expense_by_id(
+        db,
+        group_id,
+        expense_id,
+    )
+
+    if expense is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Expense not found",
+        )
+
+    # 4. Only the payer can delete
+    if expense.paid_by_user_id != current_user.id:
+        raise HTTPException(
+            status_code=403,
+            detail="Only the payer can delete this expense",
+        )
+
+    # 5. Soft delete
+    try:
+        expense.is_deleted = True
+        db.commit()
+
+    except Exception:
+        db.rollback()
+        raise
