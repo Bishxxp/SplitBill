@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Annotated, Literal
 
 from pydantic import BaseModel, Field
@@ -22,3 +23,13 @@ class ExpenseCreate(BaseModel):
         EqualSplit | ExactSplit,
         Field(discriminator="type"),
     ]
+    
+class ExpenseResponse(BaseModel):
+    id: int
+    group_id: int
+    description: str
+    paid_by: str
+    amount: str
+    shares: dict[str, str]
+    is_deleted: bool
+    created_at: datetime
