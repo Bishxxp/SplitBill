@@ -265,3 +265,125 @@ def test_soft_delete_preserves_record(client, db_session):
 
     for member in response.json()["balances"]:
         assert Decimal(member["balance"]) == Decimal("0.00")
+
+def test_payer_not_in_group(client):
+    payload = expense_payload()
+
+    payload["paid_by"] = "dan"
+
+    response = client.post(
+        "/groups/1/expenses",
+        headers=expense_headers(),
+        json=payload,
+    )
+
+    assert response.status_code == 422
+
+    assert response.json()["detail"] == (
+        "Payer must be a member of this group"
+    )
+def test_split_member_not_in_group(client):
+    payload = expense_payload()
+
+    payload["split"]["members"] = [
+        "alice",
+        "bob",
+        "dan",
+    ]
+
+    response = client.post(
+        "/groups/1/expenses",
+        headers=expense_headers(),
+        json=payload,
+    )
+
+    assert response.status_code == 422
+
+    assert response.json()["detail"] == (
+        "dan is not a member of this group"
+    )
+    
+def test_same_key_different_groups(client):
+    key = "shared-key-001"
+
+    # Group 1: Alice creates an expense
+    first = client.post(
+        "/groups/1/expenses",
+        headers=expense_headers(user="alice", key=key),
+        json=expense_payload(),
+    )
+
+    # Group 2: Bob creates another expense
+    payload = {
+        "description": "Office lunch",
+        "paid_by": "bob",
+        "amount": "200.00",
+        "split": {
+            "type": "equal",
+            "members": ["bob", "dan"],
+        },
+    }
+
+    second = client.post(
+        "/groups/2/expenses",
+        headers=expense_headers(user="bob", key=key),
+        json=payload,
+    )
+
+    assert first.status_code == 201
+    assert second.status_code == 201
+
+    assert first.json()["group_id"] == 1
+    assert second.json()["group_id"] == 2
+
+    assert second.json()["shares"] == {
+        "bob": "100.00",
+        "dan": "100.00",
+    }
+    
+def test_idempotency_after_soft_delete(client):
+    url = "/groups/1/expenses"
+    headers = expense_headers(key="deleted-key-001")
+
+    # Create expense
+    first = client.post(
+        url,
+        headers=headers,
+        json=expense_payload(),
+    )
+
+    assert first.status_code == 201
+    expense_id = first.json()["id"]
+
+    # Soft delete
+    deleted = client.delete(
+        f"{url}/{expense_id}",
+        headers={"X-User": "alice"},
+    )
+
+    assert deleted.status_code == 204
+
+    # Retry with the same key
+    retry = client.post(
+        url,
+        headers=headers,
+        json=expense_payload(),
+    )
+
+    assert retry.status_code == 201
+    assert retry.json()["id"] == expense_id
+    assert retry.json()["is_deleted"] is True
+
+    # The deleted expense must not appear in the list
+    expenses = client.get(
+        url,
+        headers={"X-User": "alice"},
+    )
+
+    assert expenses.json() == []
+    
+def test_missing_user_header(client):
+    response = client.get("/groups")
+
+    assert response.status_code == 422
+    
