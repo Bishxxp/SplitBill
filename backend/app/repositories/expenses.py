@@ -1,6 +1,6 @@
 from decimal import Decimal
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
 
@@ -142,3 +142,51 @@ def get_expense_by_id(
             Expense.is_deleted.is_(False),
         )
     )
+    
+def get_total_paid_by_members(
+    db: Session,
+    group_id: int,
+) -> dict[int, Decimal]:
+
+    statement = (
+        select(
+            Expense.paid_by_user_id,
+            func.sum(Expense.amount),
+        )
+        .where(
+            Expense.group_id == group_id,
+            Expense.is_deleted.is_(False),
+        )
+        .group_by(Expense.paid_by_user_id)
+    )
+
+    return {
+        user_id: total
+        for user_id, total in db.execute(statement).all()
+    }
+
+def get_total_shares_by_members(
+    db: Session,
+    group_id: int,
+) -> dict[int, Decimal]:
+
+    statement = (
+        select(
+            ExpenseShare.user_id,
+            func.sum(ExpenseShare.amount),
+        )
+        .join(
+            Expense,
+            Expense.id == ExpenseShare.expense_id,
+        )
+        .where(
+            Expense.group_id == group_id,
+            Expense.is_deleted.is_(False),
+        )
+        .group_by(ExpenseShare.user_id)
+    )
+
+    return {
+        user_id: total
+        for user_id, total in db.execute(statement).all()
+    }

@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 
+from app.routers.balances import router as balances_router
 from app.routers.expenses import router as expenses_router
 from app.routers.groups import router as groups_router
 
@@ -11,6 +12,7 @@ app = FastAPI(
 
 app.include_router(groups_router)
 app.include_router(expenses_router)
+app.include_router(balances_router)
 
 
 @app.get("/")

@@ -57,3 +57,23 @@ def get_group_member_names(
     )
 
     return list(db.scalars(statement).all())
+
+def get_group_members(
+    db: Session,
+    group_id: int,
+) -> list[tuple[int, str]]:
+
+    statement = (
+        select(User.id, User.username)
+        .join(
+            GroupMember,
+            User.id == GroupMember.user_id,
+        )
+        .where(GroupMember.group_id == group_id)
+        .order_by(User.id)
+    )
+
+    return [
+        (user_id, username)
+        for user_id, username in db.execute(statement).all()
+    ]
