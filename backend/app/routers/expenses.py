@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from app.dependencies import get_current_user, get_db
 from app.models import User
 from app.schemas.expenses import ExpenseCreate, ExpenseResponse
-from app.services.expenses import create_expense
+from app.services.expenses import create_expense, list_expenses
 
 router = APIRouter(
     prefix="/groups/{group_id}/expenses",
@@ -41,4 +41,19 @@ def add_expense(
         current_user=user,
         data=data,
         idempotency_key=idempotency_key,
+    )
+    
+@router.get(
+    "",
+    response_model=list[ExpenseResponse],
+)
+def get_expenses(
+    group_id: int,
+    db: Annotated[Session, Depends(get_db)],
+    user: Annotated[User, Depends(get_current_user)],
+):
+    return list_expenses(
+        db=db,
+        group_id=group_id,
+        current_user=user,
     )

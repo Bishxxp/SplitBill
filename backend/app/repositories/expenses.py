@@ -109,3 +109,22 @@ def get_expense_shares(
         username: amount
         for username, amount in rows
     }
+    
+def list_group_expenses(
+    db: Session,
+    group_id: int,
+) -> list[Expense]:
+
+    statement = (
+        select(Expense)
+        .where(
+            Expense.group_id == group_id,
+            Expense.is_deleted.is_(False),
+        )
+        .order_by(
+            Expense.created_at.desc(),
+            Expense.id.desc(),
+        )
+    )
+
+    return list(db.scalars(statement).all())

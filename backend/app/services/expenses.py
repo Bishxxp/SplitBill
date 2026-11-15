@@ -7,6 +7,7 @@ from app.models import Expense, User
 from app.repositories.expenses import (
     get_expense_by_key,
     get_expense_shares,
+    list_group_expenses,
     save_expense,
 )
 from app.repositories.groups import (
@@ -174,3 +175,34 @@ def create_expense(
     except Exception:
         db.rollback()
         raise
+    
+def list_expenses(
+    db: Session,
+    group_id: int,
+    current_user: User,
+) -> list[ExpenseResponse]:
+
+    # 1. Check group existence
+    group = get_group_by_id(db, group_id)
+
+    if group is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Group not found",
+        )
+
+    # 2. Check requester membership
+    if not is_group_member(db, group_id, current_user.id):
+        raise HTTPException(
+            status_code=403,
+            detail="Not a member of this group",
+        )
+
+    # 3. Query expenses
+    expenses = list_group_expenses(db, group_id)
+
+    # 4. Convert to response schema
+    return [
+        build_expense_response(db, expense)
+        for expense in expenses
+    ]
