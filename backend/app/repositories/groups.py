@@ -1,7 +1,6 @@
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.models import Group, GroupMember
 from app.models import Group, GroupMember, User
 
 
@@ -21,6 +20,7 @@ def get_groups_by_user(
     )
 
     return list(db.scalars(statement).all())
+
 
 def get_group_by_id(
     db: Session,
@@ -58,6 +58,7 @@ def get_group_member_names(
 
     return list(db.scalars(statement).all())
 
+
 def get_group_members(
     db: Session,
     group_id: int,
@@ -73,7 +74,4 @@ def get_group_members(
         .order_by(User.id)
     )
 
-    return [
-        (user_id, username)
-        for user_id, username in db.execute(statement).all()
-    ]
+    return [(user_id, username) for user_id, username in db.execute(statement).all()]

@@ -21,6 +21,7 @@ def get_groups(
 ):
     return list_user_groups(db, user)
 
+
 @router.get("/{group_id}", response_model=GroupDetailResponse)
 def get_group(
     group_id: int,

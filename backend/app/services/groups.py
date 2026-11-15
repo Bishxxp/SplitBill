@@ -17,6 +17,7 @@ def list_user_groups(
 ) -> list[Group]:
     return get_groups_by_user(db, user.id)
 
+
 def get_group_detail(
     db: Session,
     user: User,

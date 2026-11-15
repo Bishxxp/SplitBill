@@ -6,15 +6,12 @@ from app.models import Group, GroupMember, User
 
 def seed_database():
     with SessionLocal.begin() as session:
-
         # 1. Create users
         usernames = ["alice", "bob", "carol", "dan"]
         users = {}
 
         for username in usernames:
-            user = session.scalar(
-                select(User).where(User.username == username)
-            )
+            user = session.scalar(select(User).where(User.username == username))
 
             if user is None:
                 user = User(username=username)
@@ -30,9 +27,7 @@ def seed_database():
         ]
 
         for group_name, members in groups_data:
-            group = session.scalar(
-                select(Group).where(Group.name == group_name)
-            )
+            group = session.scalar(select(Group).where(Group.name == group_name))
 
             if group is None:
                 group = Group(name=group_name)
@@ -43,18 +38,10 @@ def seed_database():
             for username in members:
                 user = users[username]
 
-                membership = session.get(
-                    GroupMember,
-                    (group.id, user.id)
-                )
+                membership = session.get(GroupMember, (group.id, user.id))
 
                 if membership is None:
-                    session.add(
-                        GroupMember(
-                            group_id=group.id,
-                            user_id=user.id
-                        )
-                    )
+                    session.add(GroupMember(group_id=group.id, user_id=user.id))
 
     print("Seed data completed successfully!")
 

@@ -19,14 +19,9 @@ def save_expense(
     # 1. Find user IDs
     usernames = set(shares) | {data.paid_by}
 
-    users = db.scalars(
-        select(User).where(User.username.in_(usernames))
-    ).all()
+    users = db.scalars(select(User).where(User.username.in_(usernames))).all()
 
-    user_ids = {
-        user.username: user.id
-        for user in users
-    }
+    user_ids = {user.username: user.id for user in users}
 
     if len(user_ids) != len(usernames):
         raise ValueError("One or more users were not found")
@@ -41,9 +36,7 @@ def save_expense(
             amount=Decimal(data.amount),
             idempotency_key=idempotency_key,
         )
-        .on_conflict_do_nothing(
-            constraint="uq_expenses_group_idempotency"
-        )
+        .on_conflict_do_nothing(constraint="uq_expenses_group_idempotency")
         .returning(Expense.id)
     )
 
@@ -64,18 +57,21 @@ def save_expense(
         return existing, False
 
     # 4. Insert shares
-    db.add_all([
-        ExpenseShare(
-            expense_id=expense_id,
-            user_id=user_ids[member],
-            amount=amount,
-        )
-        for member, amount in shares.items()
-    ])
+    db.add_all(
+        [
+            ExpenseShare(
+                expense_id=expense_id,
+                user_id=user_ids[member],
+                amount=amount,
+            )
+            for member, amount in shares.items()
+        ]
+    )
 
     db.flush()
 
     return db.get(Expense, expense_id), True
+
 
 def get_expense_by_key(
     db: Session,
@@ -88,7 +84,8 @@ def get_expense_by_key(
             Expense.idempotency_key == idempotency_key,
         )
     )
-    
+
+
 def get_expense_shares(
     db: Session,
     expense_id: int,
@@ -105,11 +102,9 @@ def get_expense_shares(
 
     rows = db.execute(statement).all()
 
-    return {
-        username: amount
-        for username, amount in rows
-    }
-    
+    return {username: amount for username, amount in rows}
+
+
 def list_group_expenses(
     db: Session,
     group_id: int,
@@ -129,6 +124,7 @@ def list_group_expenses(
 
     return list(db.scalars(statement).all())
 
+
 def get_expense_by_id(
     db: Session,
     group_id: int,
@@ -142,7 +138,8 @@ def get_expense_by_id(
             Expense.is_deleted.is_(False),
         )
     )
-    
+
+
 def get_total_paid_by_members(
     db: Session,
     group_id: int,
@@ -160,10 +157,8 @@ def get_total_paid_by_members(
         .group_by(Expense.paid_by_user_id)
     )
 
-    return {
-        user_id: total
-        for user_id, total in db.execute(statement).all()
-    }
+    return {user_id: total for user_id, total in db.execute(statement).all()}
+
 
 def get_total_shares_by_members(
     db: Session,
@@ -186,7 +181,4 @@ def get_total_shares_by_members(
         .group_by(ExpenseShare.user_id)
     )
 
-    return {
-        user_id: total
-        for user_id, total in db.execute(statement).all()
-    }
+    return {user_id: total for user_id, total in db.execute(statement).all()}

@@ -6,6 +6,7 @@ class GroupResponse(BaseModel):
 
     id: int
     name: str
-    
+
+
 class GroupDetailResponse(GroupResponse):
     members: list[str]

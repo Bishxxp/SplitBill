@@ -18,9 +18,7 @@ def get_current_user(
     x_user: Annotated[str, Header(alias="X-User")],
     db: Annotated[Session, Depends(get_db)],
 ) -> User:
-    user = db.scalar(
-        select(User).where(User.username == x_user)
-    )
+    user = db.scalar(select(User).where(User.username == x_user))
 
     if user is None:
         raise HTTPException(

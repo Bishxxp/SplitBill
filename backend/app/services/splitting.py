@@ -43,6 +43,7 @@ def split_equal(
 
     return shares
 
+
 def parse_share(amount: str) -> Decimal:
     if not re.fullmatch(r"\d+(?:\.\d{1,2})?", amount):
         raise ValueError(
@@ -67,16 +68,11 @@ def split_exact(
     if not shares:
         raise ValueError("At least one member is required")
 
-    parsed_shares = {
-        member: parse_share(share)
-        for member, share in shares.items()
-    }
+    parsed_shares = {member: parse_share(share) for member, share in shares.items()}
 
     allocated = sum(parsed_shares.values(), Decimal("0.00"))
 
     if allocated != total:
-        raise ValueError(
-            "The shares do not add up to the total"
-        )
+        raise ValueError("The shares do not add up to the total")
 
     return parsed_shares

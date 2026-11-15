@@ -46,7 +46,8 @@ def add_expense(
         data=data,
         idempotency_key=idempotency_key,
     )
-    
+
+
 @router.get(
     "",
     response_model=list[ExpenseResponse],
@@ -61,7 +62,8 @@ def get_expenses(
         group_id=group_id,
         current_user=user,
     )
-    
+
+
 @router.delete(
     "/{expense_id}",
     status_code=204,

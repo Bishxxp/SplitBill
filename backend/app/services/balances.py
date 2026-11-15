@@ -52,13 +52,9 @@ def calculate_group_balances(
     balances = []
 
     for user_id, username in members:
-        total_paid = paid_totals.get(
-            user_id, Decimal("0.00")
-        )
+        total_paid = paid_totals.get(user_id, Decimal("0.00"))
 
-        total_share = share_totals.get(
-            user_id, Decimal("0.00")
-        )
+        total_share = share_totals.get(user_id, Decimal("0.00"))
 
         balance = total_paid - total_share
 

@@ -88,6 +88,7 @@ def validate_expense(
 
     return shares
 
+
 def build_expense_response(
     db: Session,
     expense: Expense,
@@ -106,10 +107,7 @@ def build_expense_response(
         description=expense.description,
         paid_by=payer.username,
         amount=f"{expense.amount:.2f}",
-        shares={
-            username: f"{amount:.2f}"
-            for username, amount in shares.items()
-        },
+        shares={username: f"{amount:.2f}" for username, amount in shares.items()},
         is_deleted=expense.is_deleted,
         created_at=expense.created_at,
     )
@@ -176,7 +174,8 @@ def create_expense(
     except Exception:
         db.rollback()
         raise
-    
+
+
 def list_expenses(
     db: Session,
     group_id: int,
@@ -203,11 +202,9 @@ def list_expenses(
     expenses = list_group_expenses(db, group_id)
 
     # 4. Convert to response schema
-    return [
-        build_expense_response(db, expense)
-        for expense in expenses
-    ]
-    
+    return [build_expense_response(db, expense) for expense in expenses]
+
+
 def delete_expense(
     db: Session,
     group_id: int,

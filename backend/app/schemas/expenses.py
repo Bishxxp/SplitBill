@@ -23,7 +23,8 @@ class ExpenseCreate(BaseModel):
         EqualSplit | ExactSplit,
         Field(discriminator="type"),
     ]
-    
+
+
 class ExpenseResponse(BaseModel):
     id: int
     group_id: int
