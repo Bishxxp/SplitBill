@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import ExpenseForm from "@/components/ExpenseForm";
 import DeleteExpenseButton from "@/components/DeleteExpenseButton";
+import OverviewSkeleton from "@/components/OverviewSkeleton";
+import { formatMoney } from "@/lib/format";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
@@ -124,18 +126,38 @@ export default function GroupOverview({ group, user }: Props) {
         }}
       />
 
-      {loading && (
-        <p className="text-sm text-slate-500">
-          Loading expenses and balances...
-        </p>
-      )}
+      {/* Skeleton Loading */}
+      {loading && <OverviewSkeleton />}
 
-      {error && (
+      {/* Error State with Retry */}
+      {error && !loading && (
         <div
           role="alert"
-          className="rounded-xl border border-red-200 bg-red-50 p-4 text-red-700"
+          className="rounded-2xl border border-red-200 bg-red-50 p-6"
         >
-          {error}
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h3 className="font-semibold text-red-800">
+                Unable to load group information
+              </h3>
+
+              <p className="mt-2 text-sm text-red-600">{error}</p>
+
+              <p className="mt-1 text-sm text-red-500">
+                Please check your connection and try again.
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => {
+                setRefreshKey((previous) => previous + 1);
+              }}
+              className="shrink-0 rounded-xl bg-red-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-red-700"
+            >
+              Try Again
+            </button>
+          </div>
         </div>
       )}
 
@@ -171,7 +193,7 @@ export default function GroupOverview({ group, user }: Props) {
                             : "text-emerald-600"
                       }`}
                     >
-                      ฿{member.balance}
+                      {formatMoney(member.balance)}
                     </p>
 
                     <p className="mt-2 text-xs text-slate-400">
@@ -206,19 +228,19 @@ export default function GroupOverview({ group, user }: Props) {
                 <div className="divide-y divide-slate-100">
                   {data.expenses.map((expense) => (
                     <div key={expense.id} className="p-5">
-                      <div className="flex items-center justify-between gap-4">
-                        <div>
-                          <h4 className="font-semibold text-slate-900">
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                        <div className="min-w-0 flex-1">
+                          <h4 className="break-words font-semibold text-slate-900">
                             {expense.description}
                           </h4>
 
-                          <p className="mt-1 text-sm text-slate-500">
+                          <p className="mt-1 text-sm capitalize text-slate-500">
                             Paid by {expense.paid_by}
                           </p>
                         </div>
 
-                        <p className="whitespace-nowrap text-lg font-bold text-slate-900">
-                          ฿{expense.amount}
+                        <p className="shrink-0 text-lg font-bold text-slate-900">
+                          {formatMoney(expense.amount)}
                         </p>
                       </div>
 
@@ -238,7 +260,7 @@ export default function GroupOverview({ group, user }: Props) {
                                   {username}
                                 </span>
                                 <span className="font-medium text-slate-900">
-                                  ฿{amount}
+                                  {formatMoney(amount)}
                                 </span>
                               </div>
                             ),
