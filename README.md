@@ -57,7 +57,7 @@ splitbill/
 ### 1. Clone and start PostgreSQL
 
 ```powershell
-git clone https://github.com/YOUR_USERNAME/splitbill.git
+git clone https://github.com/Bishxxp/splitbill.git
 cd splitbill
 docker compose up -d db
 ```
